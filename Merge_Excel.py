@@ -1,40 +1,41 @@
-import numpy as np
-import pandas as pd
-from os import listdir
-import xlrd
-import os
+import numpy as np #install using cmd: pip install numpy
+#we used numpy to generate arrays to maintain contious 
+
+import pandas as pd #install using cmd: pip install pandas
+#we used pandas to read the excel files into dataframes and to make operations on it
+
+import os #inbuild module and used to get current working directory and to know list of files in directory specified
 
 
-li = []
-pat = input("Enter directory of Excel file which are needed to be merged:")  # example D:\excelfolder
-savepath = input('Path where the final excel file to be saved\n ex:D:\main.xlsx:')  # example D:\main.xlsx
-files = listdir(pat) # List of files in the directory
+li = [] #Empty list
 
+pat = os.getcwd() #current working directory is the search directory for the excel files
+print('please place all your excel files in the directory',pat)
+print("Looking for Excel files in the",pat)
+savepath = pat +'\\'+'final.xlsx' 
+
+files = os.listdir(pat) # List of files in the directory
 
 for i in files:
-    if i.endswith('.xlsx') or i.endswith('.xls') :  # check whether the file is excel file
+    if i.endswith('.xlsx') or i.endswith('.xls') or i.endswith('.csv'):  # check whether the file is excel file
         li.append(i)
-fpath = pat + '\\' + str(li[0])  # path of first file along with name of file
 
-
-if len(li) > 0:  # checking whether atleast single file exists
+if len(li) > 0:  # checking whether atleast single excel file exists
+    fpath = pat + '\\' + str(li[0])  # path of first file along with name of file
     first_df = pd.read_excel(fpath)  # Reading of first excel file into pandas dataframe
-    l = f = len(first_df)  # length of dataframe used to maintain continuous index for every excel sheet
 
 if len(li) > 1:  # Checking whether excel files exits more than 1
-
     for i in range(1, len(li)):
         fpath = pat+'\\'+str(li[i])  # path of each file in the directory
-        temp = pd.read_excel(fpath)
-        # opening each file into dataframe
+        temp = pd.read_excel(fpath)      # opening each file into dataframe    
+        if first_df.shape[1] == temp.shape[1]:   # check the columns size of first ever dataframe and current dataframe is equal
+            first_df = first_df.append(temp,ignore_index=True)  # append the current dataframe to first dataframe
+        else:
+            print('file name :',li[i],' Has diffrent shape in columns')
 
-        if first_df.shape[1] == temp.shape[1]:  # check the columns size of first ever dataframe and current dataframe is equal
-            temp.index = np.arange(f, f+l)  # changing the current dataframe index that continues the previous dataframe
-            # initially f is len of first dataframe
-            
-            f += l  # increase f by len of dataframe to continue the index for next excel files
-            first_df = first_df.append(temp)  # append the current dataframe to first dataframe
-
-print(first_df)
-first_df.to_excel(savepath)  # saving dataframe to excel
-print("File saved successfully at",savepath)
+if len(li)>0:
+    print(first_df)
+    first_df.to_excel(savepath)  # saving dataframe to excel
+    print("File saved successfully at",savepath)
+else:
+    print("No excel files found please copy the excel file into",pat,"\n","then re RUN the code")
